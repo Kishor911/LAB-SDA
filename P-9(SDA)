@@ -1,0 +1,49 @@
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+nltk.download('stopwords')
+
+# Load dataset
+data = pd.DataFrame({
+    'label': ['spam', 'ham', 'spam', 'ham', 'spam', 'ham'],
+    'message': [
+        'Win money now',
+        'Meeting scheduled tomorrow',
+        'Claim your free prize',
+        'Project discussion at noon',
+        'Limited offer click now',
+        'Lunch at cafeteria'
+    ]
+})
+
+#Convert labels to binary
+data['label'] = data['label'].map({'ham': 0, 'spam': 1})
+
+# TF-IDF Vectorization
+tfidf = TfidfVectorizer(stop_words=stopwords.words('english'))
+X = tfidf.fit_transform(data['message'])
+y = data['label']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+#Train Naive Bayes classifier
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+# Prediction
+y_pred = model.predict(X_test)
+
+# Evaluation
+accuracy = accuracy_score(y_test, y_pred)
+cm = confusion_matrix(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+print("Confusion Matrix:\n", cm)
